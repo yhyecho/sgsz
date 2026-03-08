@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>时光水族贴纸报价系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F0F4F3;
+            --fg: #1A2F2A;
+            --muted: #5E6D6A;
+            --accent: #0D7377;
+            --accent-light: #14A3A8;
+            --accent-glow: rgba(13, 115, 119, 0.15);
+            --card: #FFFFFF;
+            --border: #D4DCDA;
+            --surface: #E4EBE9;
+            --danger: #C75050;
+            --warning: #D4852A;
+            --purple: #667eea;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+
+        .bg-texture {
+            background-image: 
+                radial-gradient(ellipse at 0% 0%, rgba(13, 115, 119, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(13, 115, 119, 0.04) 0%, transparent 50%);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(26, 47, 42, 0.04), 0 4px 16px rgba(26, 47, 42, 0.06);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 8px;
+            background: var(--surface);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--fg);
+            transition: all 0.2s ease;
+            outline: none;
+            text-align: center;
+        }
+
+        .input-field:focus {
+            background: var(--card);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .mode-tabs {
+            display: flex;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-tab.active {
+            background: var(--card);
+            color: var(--accent);
+            box-shadow: 0 2px 6px rgba(26, 47, 42, 0.08);
+        }
+
+        .option-btn {
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .option-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px 20px;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            box-shadow: 0 4px 12px rgba(13, 115, 119, 0.25);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #E69F2A 100%);
+            box-shadow: 0 4px 12px rgba(212, 133, 42, 0.25);
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #2C3E50 0%, #4CA1AF 100%);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.25);
+        }
+
+        .btn-copy {
+            background: linear-gradient(135deg, var(--purple) 0%, #764ba2 100%);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-action:active { transform: scale(0.98); }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        .data-table th {
+            text-align: left;
+            padding: 8px 6px;
+            color: var(--muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            padding: 10px 6px;
+            border-bottom: 1px solid var(--surface);
+            vertical-align: middle;
+        }
+        
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .data-table .col-spec { min-width: 110px; }
+        .data-table .col-num { width: 50px; text-align: center; }
+        .data-table .col-area { text-align: right; font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: var(--accent); }
+        .data-table .col-action { width: 36px; text-align: center; }
+
+        .data-table tbody tr {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .data-table tbody tr:hover { background: rgba(13, 115, 119, 0.03); }
+        .data-table tbody tr.active-row { background: rgba(13, 115, 119, 0.08); }
+
+        .delete-btn {
+            width: 28px; height: 28px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: var(--muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .delete-btn:hover {
+            background: rgba(199, 80, 80, 0.1);
+            color: var(--danger);
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%; height: 6px;
+            background: var(--surface);
+            border-radius: 3px;
+            outline: none;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px; height: 22px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(13, 115, 119, 0.4);
+        }
+
+        .result-panel {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            border-radius: 16px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-panel::before {
+            content: '';
+            position: absolute;
+            top: -30%; right: -30%;
+            width: 60%; height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+        }
+
+        .label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        
+        .unit-text { font-weight: 400; font-size: 10px; margin-left: 2px; }
+
+        .empty-state { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+        .safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+        
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        /* 导出专用图片样式 */
+        #exportImageContainer {
+            padding: 24px;
+            background: white;
+        }
+        .export-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 12px;
+        }
+        .export-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+        .export-date {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .export-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .export-table th {
+            background: #F0F4F3;
+            padding: 8px;
+            text-align: left;
+            color: var(--fg);
+            font-size: 12px;
+        }
+        .export-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+        }
+        .export-total-box {
+            background: #F0F4F3;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: right;
+        }
+        .export-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .export-final-price {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .export-final-price span:first-child {
+            font-weight: 600;
+            color: var(--fg);
+        }
+        .export-final-price span:last-child {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .export-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+        }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeUp 0.3s ease forwards; }
+    </style>
+</head>
+<body class="bg-texture">
+    <div class="min-h-screen min-h-[100dvh] flex flex-col safe-bottom">
+        <header class="px-4 pt-5 pb-3 animate-in">
+            <h1 class="font-display text-xl font-bold text-center">时光水族贴纸报价系统</h1>
+        </header>
+
+        <main class="flex-1 px-4 pb-4 space-y-4">
+            <!-- 模式切换 -->
+            <div class="mode-tabs animate-in">
+                <button class="mode-tab active" data-mode="simple" onclick="switchMode('simple')">简单模式</button>
+                <button class="mode-tab" data-mode="tank" onclick="switchMode('tank')">鱼缸模式</button>
+            </div>
+
+            <!-- 简单模式面板 -->
+            <div id="simplePanel" class="card p-4 animate-in">
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div>
+                        <label class="label">长<span class="unit-text">(mm)</span></label>
+                        <input type="number" id="simpleLength" class="input-field" placeholder="0" min="0" step="1">
+                    </div>
+                    <div>
+                        <label class="label">宽<span class="unit-text">(mm)</span></label>
+                        <input type="number" id="simpleWidth" class="input-field" placeholder="0" min="0" step="1">
+                    </div>
+                    <div>
+                        <label class="label">数量</label>
+                        <input type="number" id="simpleQuantity" class="input-field" placeholder="1" min="1" value="1">
+                    </div>
+                </div>
+                
+                <div id="simpleBtnDefault">
+                    <button class="btn-action btn-primary" onclick="handleSimpleAdd()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>添加</span>
+                    </button>
+                </div>
+                
+                <div id="simpleBtnEdit" class="hidden grid grid-cols-2 gap-2">
+                    <button class="btn-action btn-warning" onclick="handleSimpleUpdate()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        <span>保存修改</span>
+                    </button>
+                    <button class="btn-action btn-primary" onclick="handleSimpleAdd()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>新增</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 鱼缸模式面板 -->
+            <div id="tankPanel" class="card p-4 hidden">
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div>
+                        <label class="label">长<span class="unit-text">(mm)</span></label>
+                        <input type="number" id="tankLength" class="input-field" placeholder="0" min="0" step="1">
+                    </div>
+                    <div>
+                        <label class="label">宽<span class="unit-text">(mm)</span></label>
+                        <input type="number" id="tankWidth" class="input-field" placeholder="0" min="0" step="1">
+                    </div>
+                    <div>
+                        <label class="label">高<span class="unit-text">(mm)</span></label>
+                        <input type="number" id="tankHeight" class="input-field" placeholder="0" min="0" step="1">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="label" style="text-align: left; margin-bottom: 6px;">贴纸方案</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="option-btn" data-plan="four" onclick="selectPlan(this, 'four')">四面全贴</button>
+                        <button class="option-btn" data-plan="two" onclick="selectPlan(this, 'two')">底面+背面</button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="label">数量</label>
+                            <input type="number" id="tankQuantity" class="input-field" placeholder="1" min="1" value="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tankBtnDefault">
+                    <button class="btn-action btn-primary" onclick="handleTankAdd()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>添加</span>
+                    </button>
+                </div>
+                
+                <div id="tankBtnEdit" class="hidden grid grid-cols-2 gap-2">
+                    <button class="btn-action btn-warning" onclick="handleTankUpdate()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        <span>保存修改</span>
+                    </button>
+                    <button class="btn-action btn-primary" onclick="handleTankAdd()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>新增</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 贴纸清单 -->
+            <div class="card p-4 animate-in">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="font-semibold text-sm">贴纸清单</h2>
+                    <button id="clearAllBtn" class="text-xs font-medium px-2 py-1 rounded hidden" 
+                            style="color: var(--danger);"
+                            onclick="clearAll()">
+                        清空
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="col-spec">规格</th>
+                                <th class="col-num">数量</th>
+                                <th class="col-area">面积(m²)</th>
+                                <th class="col-action"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartTableBody"></tbody>
+                    </table>
+                </div>
+                
+                <div id="emptyState" class="empty-state">暂无记录</div>
+
+                <div id="totalAreaRow" class="mt-3 pt-3 border-t hidden" style="border-color: var(--border);">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs" style="color: var(--muted);">累计面积</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="font-display text-base font-bold" style="color: var(--accent);" id="accumulatedArea">0.0000</span>
+                            <span class="text-xs" style="color: var(--muted);">m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 单价设置 -->
+            <div class="card p-4 animate-in">
+                <label class="label" style="text-align: left;">单价 (元/平方米)</label>
+                <div class="flex items-center gap-3 mt-1 mb-2">
+                    <span class="text-xs font-medium" style="color: var(--muted);">30</span>
+                    <input type="range" class="range-slider flex-1" id="priceSlider" min="30" max="45" step="1" value="35">
+                    <span class="text-xs font-medium" style="color: var(--muted);">45</span>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <input type="number" id="unitPrice" class="input-field text-center" style="max-width: 80px;" value="35" min="30" max="45">
+                    <span class="text-xs font-medium" style="color: var(--muted);">元/m²</span>
+                </div>
+            </div>
+
+            <!-- 计算结果 & 操作按钮 -->
+            <div id="resultPanel" class="result-panel p-4 hidden">
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <div class="text-white/60 text-xs mb-1">总面积</div>
+                            <div class="font-display text-xl font-bold" id="finalArea">0.0000 m²</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-white/60 text-xs mb-1">应付金额</div>
+                            <div class="font-display text-xl font-bold">¥ <span id="finalPrice">0.00</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 两个导出按钮并排 -->
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button class="btn-action btn-export text-sm" onclick="openExportModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <span>生成图片</span>
+                        </button>
+                        <button class="btn-action btn-copy text-sm" onclick="copyQuoteText()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span>复制报价</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 导出预览弹窗 -->
+    <div id="exportModal" class="modal-overlay" onclick="closeExportModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="p-3 border-b flex justify-between items-center" style="border-color: var(--border);">
+                <span class="font-bold text-sm">报价单预览</span>
+                <div class="flex gap-2">
+                    <button class="text-xs px-3 py-1.5 rounded font-semibold" style="background: var(--accent); color: white;" onclick="saveAsImage()">保存为图片</button>
+                    <button class="text-xs px-3 py-1.5 rounded font-semibold" style="background: var(--surface); color: var(--muted);" onclick="closeExportModal()">关闭</button>
+                </div>
+            </div>
+            
+            <div id="exportImageContainer">
+                <div class="export-header">
+                    <div class="export-title">时光水族贴纸报价单</div>
+                    <div class="export-date" id="exportDate"></div>
+                </div>
+                
+                <table class="export-table">
+                    <thead>
+                        <tr>
+                            <th>规格</th>
+                            <th style="text-align: center;">数量</th>
+                            <th style="text-align: right;">面积(m²)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exportTableBody"></tbody>
+                </table>
+                
+                <div class="export-total-box">
+                    <div class="export-total-row">
+                        <span>总面积</span>
+                        <span id="exportTotalArea">0.0000 m²</span>
+                    </div>
+                    <div class="export-total-row">
+                        <span>单价</span>
+                        <span id="exportUnitPrice">35元/m²</span>
+                    </div>
+                    <div class="export-final-price">
+                        <span>应付金额</span>
+                        <span>¥ <span id="exportFinalPrice">0.00</span></span>
+                    </div>
+                </div>
+                
+                <div class="export-footer">
+                    感谢您的惠顾，期待再次合作！
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cartItems = [];
+        let currentMode = 'simple';
+        let selectedPlan = null;
+        let editingId = null;
+
+        // DOM 引用
+        const simplePanel = document.getElementById('simplePanel');
+        const tankPanel = document.getElementById('tankPanel');
+        const cartTableBody = document.getElementById('cartTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const totalAreaRow = document.getElementById('totalAreaRow');
+        const accumulatedArea = document.getElementById('accumulatedArea');
+        const resultPanel = document.getElementById('resultPanel');
+        const priceSlider = document.getElementById('priceSlider');
+        const unitPriceInput = document.getElementById('unitPrice');
+        const exportModal = document.getElementById('exportModal');
+
+        function switchMode(mode) {
+            currentMode = mode;
+            cancelEdit();
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.mode === mode);
+            });
+            simplePanel.classList.toggle('hidden', mode !== 'simple');
+            tankPanel.classList.toggle('hidden', mode !== 'tank');
+        }
+
+        function selectPlan(element, plan) {
+            document.querySelectorAll('#tankPanel .option-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            selectedPlan = plan;
+        }
+
+        // 简单模式逻辑
+        function handleSimpleAdd() {
+            const length = parseFloat(document.getElementById('simpleLength').value) || 0;
+            const width = parseFloat(document.getElementById('simpleWidth').value) || 0;
+            const quantity = parseInt(document.getElementById('simpleQuantity').value) || 1;
+
+            if (length <= 0 || width <= 0) { showToast('请输入有效数值'); return; }
+
+            const area = (length * width * quantity) / 1000000;
+            const spec = `${length}×${width}mm`;
+
+            cartItems.push({ id: Date.now(), type: 'simple', spec, length, width, quantity, area });
+            
+            showToast('已添加');
+            cancelEdit();
+            renderCart();
+            calculate();
+        }
+
+        function handleSimpleUpdate() {
+            if (!editingId) return;
+            const length = parseFloat(document.getElementById('simpleLength').value) || 0;
+            const width = parseFloat(document.getElementById('simpleWidth').value) || 0;
+            const quantity = parseInt(document.getElementById('simpleQuantity').value) || 1;
+
+            if (length <= 0 || width <= 0) { showToast('请输入有效数值'); return; }
+
+            const area = (length * width * quantity) / 1000000;
+            const spec = `${length}×${width}mm`;
+
+            const index = cartItems.findIndex(item => item.id === editingId);
+            if (index !== -1) {
+                cartItems[index] = { ...cartItems[index], length, width, quantity, area, spec };
+                showToast('修改成功');
+            }
+            cancelEdit();
+            renderCart();
+            calculate();
+        }
+
+        // 鱼缸模式逻辑
+        function handleTankAdd() {
+            const length = parseFloat(document.getElementById('tankLength').value) || 0;
+            const width = parseFloat(document.getElementById('tankWidth').value) || 0;
+            const height = parseFloat(document.getElementById('tankHeight').value) || 0;
+            const quantity = parseInt(document.getElementById('tankQuantity').value) || 1;
+            
+            if (length <= 0 || width <= 0 || height <= 0) { showToast('请输入有效数值'); return; }
+            if (!selectedPlan) { showToast('请选择方案'); return; }
+
+            let area = 0;
+            let specText = `${length}×${width}×${height}mm`;
+            
+            if (selectedPlan === 'four') {
+                area = (length * width + length * height + width * height * 2) * quantity / 1000000;
+                specText += ' (四)';
+            } else {
+                area = (length * width + length * height) * quantity / 1000000;
+                specText += ' (底背)';
+            }
+
+            cartItems.push({ id: Date.now(), type: 'tank', spec: specText, length, width, height, quantity, area, plan: selectedPlan });
+            showToast('已添加');
+            cancelEdit();
+            renderCart();
+            calculate();
+        }
+
+        function handleTankUpdate() {
+            if (!editingId) return;
+            const length = parseFloat(document.getElementById('tankLength').value) || 0;
+            const width = parseFloat(document.getElementById('tankWidth').value) || 0;
+            const height = parseFloat(document.getElementById('tankHeight').value) || 0;
+            const quantity = parseInt(document.getElementById('tankQuantity').value) || 1;
+
+            if (length <= 0 || width <= 0 || height <= 0) { showToast('请输入有效数值'); return; }
+            if (!selectedPlan) { showToast('请选择方案'); return; }
+
+            let area = 0;
+            let specText = `${length}×${width}×${height}mm`;
+            
+            if (selectedPlan === 'four') {
+                area = (length * width + length * height + width * height * 2) * quantity / 1000000;
+                specText += ' (四)';
+            } else {
+                area = (length * width + length * height) * quantity / 1000000;
+                specText += ' (底背)';
+            }
+
+            const index = cartItems.findIndex(item => item.id === editingId);
+            if (index !== -1) {
+                cartItems[index] = { ...cartItems[index], length, width, height, quantity, area, spec: specText, plan: selectedPlan };
+                showToast('修改成功');
+            }
+            cancelEdit();
+            renderCart();
+            calculate();
+        }
+
+        // 编辑逻辑
+        function startEdit(id) {
+            const item = cartItems.find(i => i.id === id);
+            if (!item) return;
+            editingId = id;
+            
+            if (item.type === 'simple') {
+                if (currentMode !== 'simple') switchMode('simple');
+                document.getElementById('simpleLength').value = item.length;
+                document.getElementById('simpleWidth').value = item.width;
+                document.getElementById('simpleQuantity').value = item.quantity;
+                document.getElementById('simpleBtnDefault').classList.add('hidden');
+                document.getElementById('simpleBtnEdit').classList.remove('hidden');
+            } else {
+                if (currentMode !== 'tank') switchMode('tank');
+                document.getElementById('tankLength').value = item.length;
+                document.getElementById('tankWidth').value = item.width;
+                document.getElementById('tankHeight').value = item.height;
+                document.getElementById('tankQuantity').value = item.quantity;
+                selectedPlan = item.plan;
+                document.querySelectorAll('#tankPanel .option-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.plan === item.plan);
+                });
+                document.getElementById('tankBtnDefault').classList.add('hidden');
+                document.getElementById('tankBtnEdit').classList.remove('hidden');
+            }
+            renderCart();
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            document.getElementById('simpleBtnDefault').classList.remove('hidden');
+            document.getElementById('simpleBtnEdit').classList.add('hidden');
+            document.getElementById('simpleLength').value = '';
+            document.getElementById('simpleWidth').value = '';
+            document.getElementById('simpleQuantity').value = '1';
+            
+            document.getElementById('tankBtnDefault').classList.remove('hidden');
+            document.getElementById('tankBtnEdit').classList.add('hidden');
+            document.getElementById('tankLength').value = '';
+            document.getElementById('tankWidth').value = '';
+            document.getElementById('tankHeight').value = '';
+            document.getElementById('tankQuantity').value = '1';
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            selectedPlan = null;
+            renderCart();
+        }
+
+        function renderCart() {
+            if (cartItems.length === 0) {
+                emptyState.classList.remove('hidden');
+                clearAllBtn.classList.add('hidden');
+                totalAreaRow.classList.add('hidden');
+                cartTableBody.innerHTML = '';
+                resultPanel.classList.add('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            clearAllBtn.classList.remove('hidden');
+            totalAreaRow.classList.remove('hidden');
+            resultPanel.classList.remove('hidden');
+            
+            let html = '';
+            cartItems.forEach(item => {
+                const activeClass = item.id === editingId ? 'active-row' : '';
+                html += `
+                    <tr class="${activeClass}" onclick="startEdit(${item.id})">
+                        <td class="col-spec">${item.spec}</td>
+                        <td class="col-num">${item.quantity}</td>
+                        <td class="col-area">${item.area.toFixed(4)}</td>
+                        <td class="col-action">
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteItem(${item.id})">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            cartTableBody.innerHTML = html;
+            calculate();
+        }
+
+        function deleteItem(id) {
+            if (id === editingId) cancelEdit();
+            cartItems = cartItems.filter(item => item.id !== id);
+            renderCart();
+        }
+
+        function clearAll() {
+            cartItems = [];
+            cancelEdit();
+            renderCart();
+        }
+
+        function calculate() {
+            let unitPrice = parseFloat(unitPriceInput.value) || 35;
+            unitPrice = Math.max(30, Math.min(45, unitPrice));
+            
+            const totalArea = cartItems.reduce((sum, item) => sum + item.area, 0);
+            const totalPrice = totalArea * unitPrice;
+            
+            accumulatedArea.textContent = totalArea.toFixed(4);
+            document.getElementById('finalArea').textContent = totalArea.toFixed(4);
+            document.getElementById('finalPrice').textContent = totalPrice.toFixed(2);
+        }
+
+        // --- 导出功能逻辑 ---
+
+        // 1. 打开图片预览
+        function openExportModal() {
+            if (cartItems.length === 0) { showToast('清单为空'); return; }
+            
+            const now = new Date();
+            document.getElementById('exportDate').textContent = `日期：${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+            
+            let tbody = '';
+            cartItems.forEach(item => {
+                tbody += `<tr><td>${item.spec}</td><td style="text-align: center;">${item.quantity}</td><td style="text-align: right; font-weight: 600; color: var(--accent);">${item.area.toFixed(4)}</td></tr>`;
+            });
+            document.getElementById('exportTableBody').innerHTML = tbody;
+            
+            const unitPrice = parseFloat(unitPriceInput.value) || 35;
+            const totalArea = cartItems.reduce((sum, item) => sum + item.area, 0);
+            const totalPrice = totalArea * unitPrice;
+            
+            document.getElementById('exportTotalArea').textContent = totalArea.toFixed(4) + ' m²';
+            document.getElementById('exportUnitPrice').textContent = unitPrice + ' 元/m²';
+            document.getElementById('exportFinalPrice').textContent = totalPrice.toFixed(2);
+            
+            exportModal.classList.add('active');
+        }
+
+        function closeExportModal(event) {
+            if (!event || event.target === exportModal) { exportModal.classList.remove('active'); }
+        }
+
+        function saveAsImage() {
+            showToast('正在生成图片...');
+            const element = document.getElementById('exportImageContainer');
+            
+            html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = '时光水族报价单.png';
+                
+                if (navigator.msSaveBlob) {
+                    navigator.msSaveBlob(canvas.msToBlob(), '时光水族报价单.png');
+                } else {
+                    const newTab = window.open();
+                    if (newTab) {
+                        newTab.document.write('<img src="' + canvas.toDataURL('image/png') + '" style="width:100%;"/>');
+                        newTab.document.close();
+                        showToast('请长按图片保存');
+                    } else {
+                        link.click();
+                    }
+                }
+            }).catch(err => {
+                console.error(err);
+                showToast('生成失败，请重试');
+            });
+        }
+
+        // 2. 复制文字逻辑 - 核心修改：鱼缸模式拆解
+        function copyQuoteText() {
+            if (cartItems.length === 0) { showToast('清单为空'); return; }
+
+            let text = '';
+            
+            // 遍历所有清单项
+            cartItems.forEach(item => {
+                if (item.type === 'simple') {
+                    // 简单模式：直接输出尺寸和数量
+                    // 格式：100×200mm × 5张
+                    text += `${item.length}×${item.width}mm × ${item.quantity}张\n`;
+                    
+                } else if (item.type === 'tank') {
+                    // 鱼缸模式：拆解为底面、背面、侧面
+                    const L = item.length;
+                    const W = item.width;
+                    const H = item.height;
+                    const Q = item.quantity;
+                    
+                    // 1. 底面
+                    text += `${L}×${W}mm × ${Q}张\n`;
+                    
+                    // 2. 背面
+                    text += `${L}×${H}mm × ${Q}张\n`;
+                    
+                    // 3. 侧面 (W×H) - 仅当选择"四面全贴"时才有
+                    if (item.plan === 'four') {
+                        // 侧面有2张，且要乘以鱼缸数量Q
+                        text += `${W}×${H}mm × ${Q * 2}张\n`;
+                    }
+                }
+            });
+            
+            // 计算最终总价
+            const unitPrice = parseFloat(unitPriceInput.value) || 35;
+            const totalArea = cartItems.reduce((sum, item) => sum + item.area, 0);
+            const totalPrice = totalArea * unitPrice;
+
+            // 添加合计行
+            text += `合计：${totalPrice.toFixed(2)}元`;
+
+            // 执行复制
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('已复制到剪贴板');
+                }).catch(err => {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        // 兼容旧版浏览器的复制方法
+        function fallbackCopyText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('已复制到剪贴板');
+            } catch (err) {
+                showToast('复制失败，请手动复制');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // 事件监听
+        priceSlider.addEventListener('input', function() {
+            unitPriceInput.value = this.value;
+            calculate();
+        });
+
+        unitPriceInput.addEventListener('input', function() {
+            let value = parseFloat(this.value) || 35;
+            value = Math.max(30, Math.min(45, value));
+            priceSlider.value = value;
+            calculate();
+        });
+
+        function showToast(message) {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.cssText = `
+                position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+                padding: 8px 16px; background: var(--fg); color: white;
+                border-radius: 6px; font-size: 12px; z-index: 2000;
+                animation: toastIn 0.2s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1500);
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
